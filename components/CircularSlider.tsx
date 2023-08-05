@@ -37,6 +37,7 @@ export type CircularSliderProps = {
   // Angles in Degrees
   maxAngle?: number;
   minAngle?: number;
+  showEuro?: boolean;
 };
 
 const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
@@ -60,6 +61,7 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
   textColor,
   textSize = 80,
   theme,
+  showEuro = false,
 }) => {
   const location = React.useRef({ x: 0, y: 0 });
   const viewRef = React.useRef< View>(null);
@@ -174,7 +176,7 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
             fill={textColor || trackColor || theme?.colors?.primary}
             textAnchor="middle"
           >
-            {Math.ceil(value).toString()}
+            {Math.ceil(value).toString()}{showEuro ? '€' : ''}
           </Text>
         )}
 
