@@ -2,19 +2,19 @@ import React, {Dispatch, SetStateAction, useState} from "react";
 import {View, Text, StyleSheet, TouchableOpacity, Dimensions, TouchableHighlight} from "react-native";
 
 import COLORS from "../colors";
-import { Option } from "../screens/Gamble";
+import { Options } from "../screens/Gamble";
 
 interface SelectionProps {
     onPress(): void;
-    text: Option;
+    text: Options;
     style?: object;
-    selected?: Option;
+    selected?: Options;
 }
 
 export const SelectionButton: React.FC<SelectionProps> = ({onPress, text, style=null, selected}) => {
 
     return (
-        <TouchableOpacity onPress={onPress} style={[styles.button, selected == text  ? {backgroundColor: COLORS.secondary} : {}]}>
+        <TouchableOpacity onPress={onPress} style={[styles.button, style, selected == text  ? {backgroundColor: COLORS.secondary} : {}]}>
                 <Text style={styles.buttonText}>{text}</Text>
         </TouchableOpacity>
     )

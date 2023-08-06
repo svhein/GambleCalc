@@ -3,6 +3,7 @@ import React from 'react';
 import { PanResponder, PanResponderGestureState, View } from 'react-native';
 import { RneFunctionComponent } from 'react-native-elements/dist/helpers';
 import Svg, { Path, Circle, G, Text } from 'react-native-svg';
+import COLORS from '../colors';
 
 // Euromerkki tiedostosta 
 // \GambleCalc\node_modules\react-native-svg\src\lib\extract\extractText.tsx
@@ -38,6 +39,7 @@ export type CircularSliderProps = {
   maxAngle?: number;
   minAngle?: number;
   showEuro?: boolean;
+  backgroundColor?: string
 };
 
 const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
@@ -66,6 +68,7 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
   const location = React.useRef({ x: 0, y: 0 });
   const viewRef = React.useRef< View>(null);
   const svgRef = React.useRef<Svg>(null);
+
   const valuePercentage = ((value - minimumValue) * 100) / maximumValue;
 
   const { current: panResponder } = React.useRef(
@@ -126,10 +129,11 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
   const startCoord = polarToCartesian(0);
   const endCoord = polarToCartesian(valuePercentage * 3.6);
   const endTintCoord = polarToCartesian(maxAngle);
+  
 
   return (
     <View
-      style={{ width, height: width }}
+      style={{ width, height: width}}
       ref={viewRef}
       onLayout={() => {
         viewRef.current?.measure((x, y, w, h, px, py) => {
@@ -144,6 +148,7 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
         <Path
           stroke={trackTintColor || theme?.colors?.grey5}
           strokeWidth={trackWidth}
+          fill={COLORS.primary}
           d={[
             'M',
             startCoord.x,
@@ -170,8 +175,8 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
         />
         {showText && (
           <Text
-            x={trackRadius + thumbRadius}
-            y={trackRadius + 40}
+            x={trackRadius + thumbRadius - 5}
+            y={trackRadius + 25} // TODO: Change text position from here
             fontSize={textSize}
             fill={textColor || trackColor || theme?.colors?.primary}
             textAnchor="middle"
@@ -192,7 +197,7 @@ const CircularSlider: RneFunctionComponent<CircularSliderProps> = ({
             {showThumbText && (
               <Text
                 x={thumbRadius}
-                y={thumbRadius + thumbTextSize / 2}
+                y={(thumbRadius + thumbTextSize )}
                 fontSize={10}
                 fill={thumbTextColor || theme?.colors?.white}
                 textAnchor="middle"
