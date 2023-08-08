@@ -20,6 +20,8 @@ import uuid from 'react-native-uuid';
 import CircularSlider from '../components/CircularSlider';
 import { Slider} from '@rneui/themed';
 import HouseIncome from '../components/HouseIncome';
+const SQLite = require('react-native-sqlite-storage')
+// import { db } from '../dbService';
 
 export enum Options {
     none = "none",
@@ -47,8 +49,13 @@ export function addZeroes(num: number | string): string {
 //   even = 3
 // }
 
+type GambleScreenProps = {
+    navigation: any;
+    route: any;
+}
+SQLite.DEBUG(true);
 
-const GambleScreen: React.FC = () => {
+const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
 
     const [selectedOption, setSelectedOption] = useState<Options>(Options.none);
     const [stake, setStake] = useState<number>(0);
@@ -62,10 +69,56 @@ const GambleScreen: React.FC = () => {
     const [stakeMissing, setStakeMissing] = useState<boolean>(false);
     const [optionMissing, setOptionMissing] = useState<boolean>(false);
     const [gamblerNameMissing, setGamblerNameMissing] = useState<boolean>(false);
-    
+
+    const [outcomeOne, setOutcomeOne] = useState<string>("")
+    const [outcomeTwo, setOutcomeTwo] = useState<string>("")
+
+    const [gameId, setGameId] = useState<string>("")
 
     const [bets, setBets] = useState<Bet[]>([])
 
+    console.log(route)
+
+    useEffect(() => {
+      if (route.params.source == "setup"){
+        console.log('setup fored')
+        const {outcomeOne, outcomeTwo} = route.params;
+        setOutcomeOne(outcomeOne);
+        setOutcomeTwo(outcomeTwo);
+        setGameId(String(uuid.v4()));
+        save();
+      }
+      else if (route.params.source == "load"){
+        console.log('load fored')
+        const {outcomeOne, outcomeTwo, bets, gameId} = route.params;
+        // TODO: deserialize bets
+        setOutcomeOne(outcomeOne);
+        setOutcomeTwo(outcomeTwo);
+        setBets(bets)
+        setGameId(gameId)
+      }
+    }, [])
+
+
+
+    // useEffect(() => {
+    //   const {outcomeOne, outcomeTwo} = route.params;
+    //   console.log(outcomeOne, outcomeTwo)
+
+    // }, [])
+
+    // const db = SQLite.openDatabase(
+    //   {
+    //     name: 'gamblecalc.db',
+    //     location: 'default',
+    //     createFromLocation: '~SQLite.db',
+    //   },
+    //   () => {console.log('Database opened successfully!')} ,
+    //   error => {
+    //     console.log("Error while opening database: " + error);
+    //   }
+    // );
+    
     useEffect(() => {
       if (Math.round(stake) != previousValue){
         Vibration.vibrate(15)
@@ -80,6 +133,44 @@ const GambleScreen: React.FC = () => {
     enum multiplierChange {
       decrease,
       increase
+    }
+    
+    function save(){
+      const db = SQLite.openDatabase(
+        {
+          name: "gamblecalc.db",
+          location: "default",
+        },
+        () => {console.log('Database opened successfully!')},
+        (error: any) => {console.log("Error while opening database: " + error)}
+      )
+
+      db.transaction((tx: any) => {
+          console.log('saving...')
+          tx.executeSql('INSERT OR REPLACE INTO events (id TEXT , outcomeOne TEXT, outcomeTwo TEXT, bets TEXT, houseEquity INTEGER, currentPrize INTEGER, currentStake INTEGER, currentMultiplier INTEGER, selectedOption TEXT)',
+          [
+            gameId,
+            outcomeOne,
+            outcomeTwo,
+            JSON.stringify(bets),
+            houseEquity,
+            currentPrize,
+            stake,
+            multiplier,
+            selectedOption
+          ],
+          (_ , results: any) => {
+            const rows = results.rows;
+            for (let i = 0; i < rows.length; i++) {
+              console.log('Row:', rows.item(i));
+            }
+          },
+          (error: any) => {
+            console.log('Error while saving: ', error)
+            db.close();
+          }
+          )
+      })
     }
 
     function handleOptionChange(option: Options){
@@ -131,14 +222,22 @@ const GambleScreen: React.FC = () => {
         <Text style={[styles.headerText, {textDecorationLine: 'underline'}]}>Gamble Book</Text>
 
         <View style={{flexDirection: 'row'}}>
-          <View style={styles.headerTextContainer}><Text style={styles.headerText}>Uolevi Wins ja Errree</Text></View>
+          <View style={styles.headerTextContainer}><Text style={styles.headerText}>{outcomeOne}</Text></View>
           <View style={styles.headerTextContainer}><Text style={styles.headerText}>vs.</Text></View>
-          <View style={styles.headerTextContainer}><Text style={styles.headerText}>Jorma Wins juu fwededwe</Text></View>
+          <View style={styles.headerTextContainer}><Text style={styles.headerText}>{outcomeTwo}</Text></View>
         </View>
+
+        <TextInput
+                style={[styles.textInput, gamblerNameMissing ? {borderColor: 'red'} : {}]}
+                onChangeText={handleNameInputChange}
+                value={gamblerName}
+                placeholder="Name of bettor"
+                autoCapitalize='characters'
+          />
 
         <View style={styles.buttonRow}>
             <SelectionButton text={Options.one} style={optionMissing ? {borderColor: 'red'} : {}} onPress={() => handleOptionChange(Options.one)} selected={selectedOption}/>
-            <SelectionButton text={Options.even} style={optionMissing ? {borderColor: 'red'} : {}} onPress={() => handleOptionChange(Options.even)} selected={selectedOption}/>
+            <SelectionButton text={Options.even} style={[optionMissing ? {borderColor: 'red'} : {}, styles.middleButton]} onPress={() => handleOptionChange(Options.even)} selected={selectedOption}/>
             <SelectionButton text={Options.two} style={optionMissing ? {borderColor: 'red'} : {}} onPress={() => handleOptionChange(Options.two)} selected={selectedOption}/>
         </View>
 
@@ -168,22 +267,17 @@ const GambleScreen: React.FC = () => {
                 thumbTouchSize={{width: 1, height: 1}}
           />
          
-        <Text style={{color: 'white'}}>{addZeroes(multiplier)}</Text>
+        <Text style={{color: 'white', fontFamily: "Play-Bold"}}>{addZeroes(stake)}€ &times; {addZeroes(multiplier)} = {addZeroes(currentPrize)}€</Text>
 
-        <View style={{flexDirection: 'row'}}>
+        <View style={{flexDirection: 'row', marginTop: 10}}>
           <DefaultButton text="<<" onPress={() => handleMultiplierChange(multiplierChange.decrease)} />
           <DefaultButton text=">>" onPress={() => handleMultiplierChange(multiplierChange.increase)} />
         </View>
 
         <View style={{flexDirection: 'row'}}>
-        <TextInput
-                style={[styles.textInput, gamblerNameMissing ? {borderColor: 'red'} : {}]}
-                onChangeText={handleNameInputChange}
-                value={gamblerName}
-                placeholder="Betters Name"
-                autoCapitalize='characters'
-          />
-          <DefaultButton text="Add Bet" onPress={() => addBet()} />
+          <DefaultButton text="Add Bet"
+                         onPress={() => addBet()}
+                        style={{marginTop: 10}} />
         </View>
         
 
@@ -191,7 +285,12 @@ const GambleScreen: React.FC = () => {
         <BetList bets={bets} />
 
         <View style={styles.bottomContainer}>
-          <HouseIncome bets={bets} currentPrice={currentPrize} houseEquity={houseEquity} />
+          <HouseIncome bets={bets}
+                       currentPrice={currentPrize}
+                       houseEquity={houseEquity}
+                       currentStake={stake}
+                       currentMultiplier={multiplier}
+                       selectedOption={selectedOption} />
         </View>
         
     </View>
@@ -224,18 +323,24 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     textInput: { 
-      height: 50, 
-      width: "45%",
+      height: 40, 
+      width: "35%",
       borderColor: 'white', 
       borderWidth: 1, 
       color: 'white',
       borderRadius: 5,
       textAlign: 'center',
+      marginBottom: 10
     },
     bottomContainer: {
       justifyContent: 'flex-end', 
       flex: 1,
       marginBottom: 20,
+    },
+    middleButton: {
+      marginLeft: 5,
+      marginRight: 5
+        
     }
 });
 

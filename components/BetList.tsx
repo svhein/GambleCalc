@@ -22,8 +22,16 @@ const BetList: React.FC<BetListProps> = ({ bets }) => {
         );
       });
     }, [bets]);
-  
-    return <View style={{flex: 1}}><ScrollView>{renderedBets}</ScrollView></View>;
+    if (bets.length > 0 ){
+        return <View style={{flex: 2, marginTop: 10, width: "90%"}}><ScrollView>{renderedBets}</ScrollView></View>;
+    } else {
+        return (
+            <View style={styles.NoBetsContainer}>
+                <Text style={styles.noBetsText}>No Bets </Text>
+            </View>
+        )
+    }
+    
   };
   
   const styles = StyleSheet.create({
@@ -37,6 +45,21 @@ const BetList: React.FC<BetListProps> = ({ bets }) => {
     },
     text: {
         color: 'white',
+    },
+    NoBetsContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 2,
+        borderTopWidth: 1,
+        borderColor: 'white',
+        width: "90%",
+        marginTop: 10,
+    },
+    noBetsText: {
+        textAlign: 'center',
+        color: 'white',
+        fontFamily: "Play-Bold",
+        textTransform: 'uppercase',
     }
   });
   

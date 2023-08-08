@@ -24,11 +24,12 @@ export const SelectionButton: React.FC<SelectionProps> = ({onPress, text, style=
 interface Props {
     onPress(): void;
     text: string;
+    style?: object;
 }
-export const DefaultButton: React.FC<Props> = ({onPress, text}) => {
+export const DefaultButton: React.FC<Props> = ({onPress, text, style}) => {
     
         return (
-            <TouchableHighlight onPress={onPress} style={[styles.button]} underlayColor={COLORS.secondary}>
+            <TouchableHighlight onPress={onPress} style={[styles.button, style]} underlayColor={COLORS.secondary}>
                     <Text style={styles.buttonText}>{text}</Text>
             </TouchableHighlight>
         )
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
         borderColor: 'white',
         borderWidth: 1,
         borderRadius: 5,
-        height: 50,
+        height: 40,
         width: "30%",
         justifyContent: 'center',
 

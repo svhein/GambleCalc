@@ -1,3 +1,18 @@
 {
-  "extends": "@tsconfig/react-native/tsconfig.json"
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    "target": "es6", // or "es2020" or any other ES6-compatible version
+    "module": "es6",
+    "moduleResolution": "node",
+    "outDir": "./dist", // Output directory for transpiled files
+    "rootDir": "./src", // Source directory for TypeScript files
+    "strict": true, // Enable strict type-checking
+    "esModuleInterop": true, // Enable compatibility with CommonJS modules
+    "resolveJsonModule": true, // Allow importing JSON files as modules
+    "declaration": true, // Generate declaration files (.d.ts)
+    "sourceMap": true // Generate source maps for debugging
+  },
+  "include": ["src"] // Add more directories or files to include in the compilation
+
 }
+
