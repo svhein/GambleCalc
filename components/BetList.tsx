@@ -45,6 +45,9 @@ const BetList: React.FC<BetListProps> = ({ bets }) => {
     },
     text: {
         color: 'white',
+        alignSelf: 'stretch',
+        textAlign: 'center',
+        width: "20%",
     },
     NoBetsContainer: {
         justifyContent: 'center',

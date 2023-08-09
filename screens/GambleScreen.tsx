@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
   Vibration,
-  Alert
+  Alert,
+  BackHandler
 } from 'react-native';
 
 import COLORS from '../colors';
@@ -65,9 +63,9 @@ type GambleScreenProps = {
     navigation: any;
     route: any;
 }
-SQLite.DEBUG(true);
+// SQLite.DEBUG(true);
 
-const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
+const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
 
     const [selectedOption, setSelectedOption] = useState<Options>(Options.none);
     const [stake, setStake] = useState<number>(0);
@@ -88,6 +86,11 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
     const [gameId, setGameId] = useState<any>("")
     const [bets, setBets] = useState<Bet[]>([])
 
+
+    
+    // Helper to prevent save function from running on initial render
+    const [isInitial, setIsInitial] = useState<boolean>(true)
+
     useEffect(() => {
       if (route.params.source == "setup"){
         console.log('Initializing from setup')
@@ -105,17 +108,38 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
         setOutcomeOne(outcomeOne);
         setOutcomeTwo(outcomeTwo);
         setGameId(gameId)
+        setIsInitial(false)
       }
       else if (route.params.source == "saved"){
         console.log('Initializing from saved')
-        const {outcomeOne, outcomeTwo, bets, gameId} = route.params;
+        const {outcomeOne, outcomeTwo, bets, gameId, houseEquity} = route.params;
         // TODO: deserialize bets
         setOutcomeOne(outcomeOne);
         setOutcomeTwo(outcomeTwo);
         setBets(bets)
         setGameId(gameId)
+        setIsInitial(false)
+        setHouseEquity(houseEquity)
       }
     }, [])
+
+    useEffect(() => {
+      console.log("Game id set to: ", gameId)
+    }, [gameId])
+
+    useEffect(() => {
+      const backAction = () => {
+          navigation.navigate('LaunchScreen')
+        return true;
+      };
+  
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+  
+      return () => backHandler.remove();
+    }, []);
     
     useEffect(() => {
       if (Math.round(stake) != previousValue){
@@ -139,6 +163,15 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
       outcomeOne: string,
       outcomeTwo: string
     }
+
+    // When new bet is added, selectedOption is set to none. This triggers save function.
+    useEffect(() => {
+      console.log('selectedOption changed', selectedOption)
+      if (selectedOption == Options.none && !isInitial){
+        console.log('Autosave...')
+        save();
+      }
+    }, [selectedOption])
     
     async function save(setupParams?: SetupParams){
       const db = SQLite.openDatabase(
@@ -154,7 +187,7 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
       
       // db.transaction((tx: any) => {
       //   tx.executeSql(
-      //     'INSERT OR REPLACE INTO events (id) VALUES (?)',
+      //     'INSERT OR REPLACE INTO events (gameId) VALUES (?)',
       //     ['idtest123'],
       //     (_ , results: any) => {
       //       console.log('Saved succesfully')
@@ -168,8 +201,8 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
       // })
 
       db.transaction((tx: any) => {
-          console.log('saving...')
-          tx.executeSql('INSERT OR REPLACE INTO events (id, outcomeOne, outcomeTwo, bets, houseEquity, currentPrize, currentStake, currentMultiplier, selectedOption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          console.log('saving with id', setupParams ? setupParams.gameId : gameId)
+          tx.executeSql('INSERT OR REPLACE INTO events (gameId, outcomeOne, outcomeTwo, bets, houseEquity, currentPrize, currentStake, currentMultiplier, selectedOption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
             setupParams ? setupParams.gameId : gameId,
             setupParams ? setupParams.outcomeOne : outcomeOne,
@@ -183,9 +216,19 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
           ],
           (_ , results: any) => {
             const rows = results.rows;
-            for (let i = 0; i < rows.length; i++) {
-              console.log('Saved row: ', rows.item(i));
-              // console.log('Row:', rows.item(i));
+            // for (let i = 0; i < rows.length; i++) {
+            //   console.log('Saved row: ', rows.item(i));
+            //   // console.log('Row:', rows.item(i));
+            // }
+            // console.log('rows affected length: ', results.rowsAffected);
+            // for (let i = 0; i < results.rowsAffected.length; i++){
+            //   console.log('Row affected: ', results.rowsAffected[i])
+            // }
+            
+            if (results.rowsAffected === 1) {
+              console.log('Row inserted');
+            } else if (results.rowsAffected === 0) {
+              console.log('Row replaced');
             }
           },
           (error: any) => {
@@ -194,6 +237,25 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
           }
           )
       })
+
+      db.transaction((tx) => {
+        tx.executeSql(
+          'SELECT * FROM events',
+          [],
+          (_, result) => {
+            const rows = result.rows;
+      
+            // Log each row's content
+            for (let i = 0; i < rows.length; i++) {
+              const row = rows.item(i);
+              console.log('Row:', row);
+            }
+          },
+          (_, error) => {
+            console.error('Error executing query:', error);
+          }
+        );
+      });
     }
 
     function handleOptionChange(option: Options){
@@ -232,9 +294,14 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
           multiplier: multiplier,
           id: String(uuid.v4())
         }]);
-        setHouseEquity(houseEquity + stake)
-        setGamblerName("")
-        save();
+        setHouseEquity(houseEquity + stake);
+        setGamblerName("");
+        setStake(0);
+        setSelectedOption(Options.none)
+
+        // wait setstate then save
+        
+        
       }
       if (selectedOption == Options.none){setOptionMissing(true)}
       if (stake <= 0){}
@@ -243,11 +310,13 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
 
   return (
     <View style={styles.container}>
-        <Text style={[styles.headerText, {textDecorationLine: 'underline'}]}>Gamble Book</Text>
 
-        <View style={{flexDirection: 'row'}}>
+        <View style={styles.headerContainer}>
           <View style={styles.headerTextContainer}><Text style={styles.headerText}>{outcomeOne}</Text></View>
-          <View style={styles.headerTextContainer}><Text style={styles.headerText}>vs.</Text></View>
+          <View style={{flexDirection: 'column'}}>
+            <Text style={[styles.headerText, {textDecorationLine: 'underline'}]}>Gamble Book</Text>
+            <Text style={styles.headerText}>vs.</Text>
+          </View>
           <View style={styles.headerTextContainer}><Text style={styles.headerText}>{outcomeTwo}</Text></View>
         </View>
 
@@ -326,6 +395,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     flex: 1,
     alignItems: 'center',
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderColor: 'white', 
+      marginBottom: 7, 
+      width: "90%"
     },
     headerTextContainer: {
       flex: 1,

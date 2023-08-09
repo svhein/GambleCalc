@@ -38,7 +38,7 @@ const LauchScreen: React.FC<LaunchScreenProps> = ({navigation}) => {
         //   });
     
           db.transaction((tx: any) => {
-              tx.executeSql('CREATE TABLE IF NOT EXISTS events (id TEXT UNIQUE, outcomeOne TEXT, outcomeTwo TEXT, bets TEXT, houseEquity INTEGER, currentPrize INTEGER, currentStake INTEGER, currentMultiplier INTEGER, selectedOption TEXT)', [], (tx: any, results: any) => {
+              tx.executeSql('CREATE TABLE IF NOT EXISTS events (gameId TEXT UNIQUE, outcomeOne TEXT, outcomeTwo TEXT, bets TEXT, houseEquity INTEGER, currentPrize INTEGER, currentStake INTEGER, currentMultiplier INTEGER, selectedOption TEXT)', [], (tx: any, results: any) => {
                     db.close();
               })
           })         

@@ -5,6 +5,8 @@ import COLORS from '../colors';
 const SQLite = require('react-native-sqlite-storage')
 import { Bet, Game } from './GambleScreen';
 import {SavedHouseIncome} from '../components/HouseIncome'
+import { ScrollView } from 'react-native';
+import { FlatList } from 'react-native';
 
 type SavedGamesScreenProps = {
     navigation: any;
@@ -29,10 +31,10 @@ const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
     const [savedGames, setSavedGames] = React.useState<Game[]>([]);
 
     useEffect(() => {
-        loadSavedGames();
-    }, [])
+      function loadSavedGames(){
 
-    function loadSavedGames(){
+        let games: Game[] = [];
+
         const db = SQLite.openDatabase(
             {
               name: "gamblecalc.db",
@@ -53,23 +55,58 @@ const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
                     setSavedGamesFound(true);
                     let row = results.rows.item(i);
                     row.bets = JSON.parse(row.bets);
-                    setSavedGames([...savedGames, row as Game]);
-                    console.log('Row:', row);
+                    games.push(row as Game);
+                    // setSavedGames([...savedGames, row as Game]);
+                    // console.log('Row:', row);
                 }
                 if (len == 0){
                     console.log('No saved games found')
                 }
+                setSavedGames(games);
+                db.close()
               },
               error => {
                 console.error('Error querying events:', error);
               }
             );
           }) 
+      } 
+      loadSavedGames();
+    }, [])
+
+    function remove(gameId: string){
+      console.log('Removing game id', gameId)
+      const db = SQLite.openDatabase(
+        {
+          name: "gamblecalc.db",
+          location: "default",
+        },
+        () => {console.log('Database opened successfully!')},
+        (error: any) => {console.log("Error while opening database: " + error)}
+      )
+
+      db.transaction(tx => {
+        tx.executeSql(
+          'DELETE FROM events WHERE gameId = ?',
+          [gameId],
+          (tx, results: any) => {
+            console.log('Deleted game with id', gameId);
+            let games = savedGames.filter((game: Game) => game.gameId != gameId);
+            setSavedGames(games);
+            db.close()
+          },
+          error => {
+            console.error('Error deleting game:', error);
+          }
+        );
+      }) 
     }
+
 
     const gameParams = (game: Game) =>{
 
       return {
+        gameId: game.gameId,
         outcomeOne: game.outcomeOne,
         outcomeTwo: game.outcomeTwo,
         bets: game.bets,
@@ -82,9 +119,6 @@ const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
     }
 
     const SavedGame: React.FC<{game: Game}> = ({game}) => {
-
-      console.log('Rendering saved game button', game.bets)
-
         return (
           <View style={styles.buttonContainer}>
                <TouchableHighlight style={styles.leftButtonContainer}
@@ -103,7 +137,7 @@ const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
                   </View>
              </TouchableHighlight>
 
-             <TouchableHighlight style={styles.rightButtonContainer}>
+             <TouchableHighlight style={styles.rightButtonContainer} onPress={() => remove(game.gameId)} underlayColor={COLORS.secondary}>
                 <View style={styles.removeButtonWrapper}>
                   <Text style={styles.text}>X</Text>
                 </View>
@@ -112,12 +146,31 @@ const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
       
         )
     }
+
+    const renderGame = ({ item }) => {
+      return <SavedGame game={item} />
+    }
+
+    // pagingEnabled={true}
  
     return (
+      
         <View style={styles.container}>
+          <Text style={{color: 'white'}}>Test</Text>
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center'}}>
              {savedGames.map((game: Game) => {
                     return <SavedGame game={game} key={game.gameId}/>
                 })}
+          </ScrollView>
+          {/* <FlatList 
+              data={savedGames}
+              renderItem={renderGame}
+              keyExtractor={(item) => item.gameId}
+              contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
+            /> */}
+
+          
+        
         </View>)
 }
 
@@ -133,16 +186,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     flexDirection: 'row',
-    height: '12%'
+    // height: '12%',
+    height: 100,
+    margin: 10,
+    width: '80%'
   },
   leftButtonContainer: {
     backgroundColor: COLORS.primary,
     height: "auto",
-    width: "70%",
+    width: "80%",
     justifyContent: 'center',
   },
   rightButtonContainer: {
-    width: '17%',
+    width: '20%',
     justifyContent: 'center'
   },
   removeButtonWrapper: {
