@@ -2,7 +2,7 @@ import React, {Dispatch, SetStateAction, useState} from "react";
 import {View, Text, StyleSheet, TouchableOpacity, Dimensions, TouchableHighlight} from "react-native";
 
 import COLORS from "../colors";
-import { Options } from "../screens/Gamble";
+import { Options } from "../screens/GambleScreen";
 
 interface SelectionProps {
     onPress(): void;

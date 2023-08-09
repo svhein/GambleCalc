@@ -47,7 +47,7 @@ const LauchScreen: React.FC<LaunchScreenProps> = ({navigation}) => {
     return (
         <View style={styles.container}>
             <DefaultButton onPress={() => navigation.navigate("SetupScreen")} text="New" style={styles.button}/>
-            <DefaultButton  onPress={() => {}} text="Load" style={styles.button}/>
+            <DefaultButton  onPress={() => navigation.navigate("SavedGamesScreen")} text="Load" style={styles.button}/>
         </View>
         )
 }

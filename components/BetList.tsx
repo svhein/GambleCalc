@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from "react";
 import {View, Text, StyleSheet, ScrollView} from "react-native";
 import COLORS from "../colors";
-import { Bet, addZeroes } from "../screens/Gamble";
+import { Bet, addZeroes } from "../screens/GambleScreen";
 
 
 interface BetListProps {

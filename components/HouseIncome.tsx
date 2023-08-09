@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useMemo} from 'react'
 import {View, Text, StyleSheet} from "react-native";
-import { Bet, Options, addZeroes } from "../screens/Gamble";
+import { Bet, Options, addZeroes } from "../screens/GambleScreen";
 
 interface BetListProps {
     bets: Bet[];
@@ -9,6 +9,20 @@ interface BetListProps {
     currentStake: number;
     currentMultiplier: number;
     selectedOption: Options;
+}
+
+function getTextColor(income: number | string) {
+    income = Number(income);
+    if (income < 0) {
+        return {color: 'red'}
+    }
+    else if (income > 0) {
+        return {color: 'green'}
+    }
+    else {
+        return {color: 'white'}
+    }
+
 }
 
 const HouseIncome: React.FC<BetListProps> = ({bets, currentPrice, houseEquity, currentStake, currentMultiplier, selectedOption}) => {
@@ -62,22 +76,6 @@ const HouseIncome: React.FC<BetListProps> = ({bets, currentPrice, houseEquity, c
         }) 
         return addZeroes(houseEquity - payout);
     }
-
-    function getTextColor(income: number) {
-        if (income < 0) {
-            return {color: 'red'}
-        }
-        else if (income > 0) {
-            return {color: 'green'}
-        }
-        else {
-            return {color: 'white'}
-        }
-
-    }
-
-
-
     return (
         <View style={styles.container}>
             <Text style={styles.header}>income</Text>
@@ -91,6 +89,69 @@ const HouseIncome: React.FC<BetListProps> = ({bets, currentPrice, houseEquity, c
                 <Text style={[styles.text, getTextColor(incomeOne)]}>{incomeOne} €</Text>
                 <Text style={[styles.text, getTextColor(incomeEven)]}>{incomeEven} €</Text>
                 <Text style={[styles.text, getTextColor(incomeTwo)]}>{incomeTwo} €</Text>
+            </View>
+        </View>
+    )
+}
+
+export const SavedHouseIncome: React.FC<{bets: Bet[]}> = ({bets}) => {
+
+    const calculateEquity = () => {
+        let equity = 0;
+        bets.forEach(bet => {
+            equity += bet.stake;
+        }) 
+        return equity;
+    }
+
+    let houseEquity = calculateEquity();
+
+    const incomeOne = () => {
+        let payout = 0;
+        bets.forEach(bet => {
+            if (bet.option == Options.one) {
+                payout += bet.stake * bet.multiplier;
+            }
+        }) 
+        return addZeroes(houseEquity - payout);
+    }
+
+    const incomeTwo = () => {
+        let payout = 0;
+        bets.forEach(bet => {
+            if (bet.option == Options.two) {
+                payout += bet.stake * bet.multiplier;
+            }
+        })
+        return addZeroes(houseEquity - payout);
+    }
+
+    const incomeEven = () => {
+        let payout = 0;
+        bets.forEach(bet => {
+            if (bet.option == Options.even) {
+                payout += bet.stake * bet.multiplier;
+            }
+        })
+        return addZeroes(houseEquity - payout);
+    }
+
+    const one  = incomeOne();
+    const two = incomeTwo();
+    const even = incomeEven();
+
+    return (
+        <View style={[styles.container, {marginTop: 2}]}>
+    
+            <View style={[styles.textRow]}>
+                <Text style={styles.text}>1</Text>
+                <Text style={styles.text}>X</Text>
+                <Text style={styles.text}>2</Text>
+            </View>
+            <View style={[styles.textRow]}>
+                <Text style={[styles.text, getTextColor(one)]}>{one} €</Text>
+                <Text style={[styles.text, getTextColor(even)]}>{two} €</Text>
+                <Text style={[styles.text, getTextColor(two)]}>{even} €</Text>
             </View>
         </View>
     )

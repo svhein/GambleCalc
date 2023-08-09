@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {View, Text, TextInput, StyleSheet} from "react-native";
 import colors from "../colors";
 import { DefaultButton } from "../components/Buttons";
+import uuid from 'react-native-uuid';
 
 interface SetupProps {
     navigation: any;
@@ -11,6 +12,7 @@ export const SetupScreen: React.FC<SetupProps> = ({navigation}) => {
 
     const [outcomeOne, setOutcomeOne] = useState<string>("")
     const [outcomeTwo, setOutcomeTwo] = useState<string>("")
+    const gameId = String(uuid.v4());
 
     return (
         <View style={styles.container}>
@@ -29,6 +31,7 @@ export const SetupScreen: React.FC<SetupProps> = ({navigation}) => {
             <DefaultButton onPress={() => navigation.navigate("GambleScreen", {
                                  outcomeOne: outcomeOne,
                                  outcomeTwo: outcomeTwo,
+                                 gameId: gameId,
                                  source: "setup"
                             })} 
                             text="Start" 

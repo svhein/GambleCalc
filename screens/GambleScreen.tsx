@@ -38,6 +38,18 @@ export type Bet = {
   id: string
 }
 
+export type Game = {
+  gameId: string,
+  outcomeOne: string,
+  outcomeTwo: string,
+  bets: Bet[],
+  houseEquity: number,
+  currentPrize: number,
+  currentStake: number,
+  currentMultiplier: number,
+  selectedOption: Options
+}
+
 export function addZeroes(num: number | string): string {
   const numberValue = typeof num === 'number' ? num : Number(num);
   return numberValue.toFixed(2);
@@ -73,23 +85,29 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
     const [outcomeOne, setOutcomeOne] = useState<string>("")
     const [outcomeTwo, setOutcomeTwo] = useState<string>("")
 
-    const [gameId, setGameId] = useState<string>("")
-
+    const [gameId, setGameId] = useState<any>("")
     const [bets, setBets] = useState<Bet[]>([])
-
-    console.log(route)
 
     useEffect(() => {
       if (route.params.source == "setup"){
-        console.log('setup fored')
-        const {outcomeOne, outcomeTwo} = route.params;
+        console.log('Initializing from setup')
+        const {outcomeOne, outcomeTwo, gameId} = route.params;
+        console.log('params', outcomeOne, outcomeTwo, gameId)
+        // Setting states and then saving by using straigtly states doesnt work; save function doesn't run with updated state values.
+        // setState is asynchronous, so it doesn't update the state immediately. (You cant event log the updated state value)
+        // So this is a workaround:
+        // save with params 
+        save({
+          gameId: gameId,
+          outcomeOne: outcomeOne,
+          outcomeTwo: outcomeTwo
+        });  
         setOutcomeOne(outcomeOne);
         setOutcomeTwo(outcomeTwo);
-        setGameId(String(uuid.v4()));
-        save();
+        setGameId(gameId)
       }
-      else if (route.params.source == "load"){
-        console.log('load fored')
+      else if (route.params.source == "saved"){
+        console.log('Initializing from saved')
         const {outcomeOne, outcomeTwo, bets, gameId} = route.params;
         // TODO: deserialize bets
         setOutcomeOne(outcomeOne);
@@ -98,26 +116,6 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
         setGameId(gameId)
       }
     }, [])
-
-
-
-    // useEffect(() => {
-    //   const {outcomeOne, outcomeTwo} = route.params;
-    //   console.log(outcomeOne, outcomeTwo)
-
-    // }, [])
-
-    // const db = SQLite.openDatabase(
-    //   {
-    //     name: 'gamblecalc.db',
-    //     location: 'default',
-    //     createFromLocation: '~SQLite.db',
-    //   },
-    //   () => {console.log('Database opened successfully!')} ,
-    //   error => {
-    //     console.log("Error while opening database: " + error);
-    //   }
-    // );
     
     useEffect(() => {
       if (Math.round(stake) != previousValue){
@@ -130,12 +128,19 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
       setCurrentPrize(stake * multiplier)
     }, [stake, multiplier])
 
+
     enum multiplierChange {
       decrease,
       increase
     }
+
+    type SetupParams = {
+      gameId: string,
+      outcomeOne: string,
+      outcomeTwo: string
+    }
     
-    function save(){
+    async function save(setupParams?: SetupParams){
       const db = SQLite.openDatabase(
         {
           name: "gamblecalc.db",
@@ -145,13 +150,30 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
         (error: any) => {console.log("Error while opening database: " + error)}
       )
 
+      // delete database:
+      
+      // db.transaction((tx: any) => {
+      //   tx.executeSql(
+      //     'INSERT OR REPLACE INTO events (id) VALUES (?)',
+      //     ['idtest123'],
+      //     (_ , results: any) => {
+      //       console.log('Saved succesfully')
+      //       db.close()
+      //     },
+      //     (error: any) => {
+      //       console.log('Error while saving', error)
+      //       db.close()
+      //     }
+      //   );
+      // })
+
       db.transaction((tx: any) => {
           console.log('saving...')
-          tx.executeSql('INSERT OR REPLACE INTO events (id TEXT , outcomeOne TEXT, outcomeTwo TEXT, bets TEXT, houseEquity INTEGER, currentPrize INTEGER, currentStake INTEGER, currentMultiplier INTEGER, selectedOption TEXT)',
+          tx.executeSql('INSERT OR REPLACE INTO events (id, outcomeOne, outcomeTwo, bets, houseEquity, currentPrize, currentStake, currentMultiplier, selectedOption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
-            gameId,
-            outcomeOne,
-            outcomeTwo,
+            setupParams ? setupParams.gameId : gameId,
+            setupParams ? setupParams.outcomeOne : outcomeOne,
+            setupParams ? setupParams.outcomeTwo : outcomeTwo,
             JSON.stringify(bets),
             houseEquity,
             currentPrize,
@@ -162,7 +184,8 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
           (_ , results: any) => {
             const rows = results.rows;
             for (let i = 0; i < rows.length; i++) {
-              console.log('Row:', rows.item(i));
+              console.log('Saved row: ', rows.item(i));
+              // console.log('Row:', rows.item(i));
             }
           },
           (error: any) => {
@@ -210,7 +233,8 @@ const GambleScreen: React.FC<GambleScreenProps> = ({route}) => {
           id: String(uuid.v4())
         }]);
         setHouseEquity(houseEquity + stake)
-        // setGamblerName("")
+        setGamblerName("")
+        save();
       }
       if (selectedOption == Options.none){setOptionMissing(true)}
       if (stake <= 0){}
