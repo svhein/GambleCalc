@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {View, Text, TextInput, StyleSheet} from "react-native";
 import colors from "../colors";
 import { DefaultButton } from "../components/Buttons";
@@ -12,28 +12,58 @@ export const SetupScreen: React.FC<SetupProps> = ({navigation}) => {
 
     const [outcomeOne, setOutcomeOne] = useState<string>("")
     const [outcomeTwo, setOutcomeTwo] = useState<string>("")
+
+    const [outComeOneMissing, setOutcomeOneMissing] = useState<boolean>(false);
+    const [outComeTwoMissing, setOutcomeTwoMissing] = useState<boolean>(false);
+
     const gameId = String(uuid.v4());
+
+    function handleButtonPress(){
+        
+        console.log("outcomeOne", outcomeOne)
+        console.log("outcomeTwo", outcomeTwo)
+
+        if (outcomeOne != "" && outcomeTwo != ""){
+            navigation.navigate("GambleScreen", {
+                outcomeOne: outcomeOne,
+                outcomeTwo: outcomeTwo,
+                gameId: gameId,
+                source: "setup"
+            })
+        }
+        if (outcomeOne == ""){
+            setOutcomeOneMissing(true);
+        }
+        if (outcomeTwo == ""){
+            setOutcomeTwoMissing(true);
+        }
+    }
+
+    const handleOutComeOneChange = (text) => {
+        setOutcomeOne(text);
+        setOutcomeOneMissing(false);
+    }
+    
+    const handleOutComeTwoChange = (text) => { 
+        setOutcomeTwo(text);
+        setOutcomeTwoMissing(false);
+    }
 
     return (
         <View style={styles.container}>
             <TextInput placeholder="OUTCOME 1"
-                        onChangeText={setOutcomeOne}
-                        style={styles.textInput}
+                        onChangeText={handleOutComeOneChange}
+                        style={[styles.textInput, outComeOneMissing ? {borderColor: 'red'} : {}]}
                         autoCapitalize='characters' />
 
             <Text style={styles.text}>vs.</Text>
 
             <TextInput placeholder="OUTCOME 2"
-                        onChangeText={setOutcomeTwo}
-                        style={styles.textInput}
+                        onChangeText={handleOutComeTwoChange}
+                        style={[styles.textInput, outComeTwoMissing ? {borderColor: 'red'} : {}]}
                         autoCapitalize='characters' />
 
-            <DefaultButton onPress={() => navigation.navigate("GambleScreen", {
-                                 outcomeOne: outcomeOne,
-                                 outcomeTwo: outcomeTwo,
-                                 gameId: gameId,
-                                 source: "setup"
-                            })} 
+            <DefaultButton onPress={handleButtonPress} 
                             text="Start" 
                             style={styles.button}/>
         </View>

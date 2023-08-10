@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { DefaultButton } from '../components/Buttons';
 import COLORS from '../colors';
+import SVGComponent from '../components/Logo';
 const SQLite = require('react-native-sqlite-storage')
 
 type LaunchScreenProps = {
@@ -23,6 +24,8 @@ const LauchScreen: React.FC<LaunchScreenProps> = ({navigation}) => {
                    setDbInit(true)},
             (error: any) => {console.log("Error while opening database: " + error)}
           )
+        
+        // delete database
 
         //   db.transaction((tx: any) => {
         //     tx.executeSql(
@@ -46,6 +49,12 @@ const LauchScreen: React.FC<LaunchScreenProps> = ({navigation}) => {
 
     return (
         <View style={styles.container}>
+            <View style={styles.logoContainer}>
+                <SVGComponent />
+                <View style={{paddingBottom: 2}}>
+                     <Text style={styles.logoText}>GambleCalc</Text>
+                </View>
+            </View>
             <DefaultButton onPress={() => navigation.navigate("SetupScreen")} text="New" style={styles.button}/>
             <DefaultButton  onPress={() => navigation.navigate("SavedGamesScreen")} text="Load" style={styles.button}/>
         </View>
@@ -61,6 +70,18 @@ const styles = StyleSheet.create({
     },
     button: {
         margin: 20
+    },
+    logoContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20
+    },
+    logoText: {
+        fontSize: 40,
+        justifyContent: 'center',
+        fontFamily: "Play-Bold",
+        color: 'white',
     }
 })
 

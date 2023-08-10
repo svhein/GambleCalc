@@ -79,17 +79,20 @@ const HouseIncome: React.FC<BetListProps> = ({bets, currentPrice, houseEquity, c
     return (
         <View style={styles.container}>
             <Text style={styles.header}>income</Text>
-
             <View style={[styles.textRow]}>
-                <Text style={styles.text}>1</Text>
-                <Text style={styles.text}>X</Text>
-                <Text style={styles.text}>2</Text>
-            </View>
-            <View style={[styles.textRow]}>
-                <Text style={[styles.text, getTextColor(incomeOne)]}>{incomeOne} €</Text>
-                <Text style={[styles.text, getTextColor(incomeEven)]}>{incomeEven} €</Text>
-                <Text style={[styles.text, getTextColor(incomeTwo)]}>{incomeTwo} €</Text>
-            </View>
+                <View style={styles.rowItem}>
+                    <Text style={styles.text}>1</Text>
+                    <Text style={[styles.text, getTextColor(incomeOne)]}>{incomeOne} €</Text>
+                </View>
+                <View style={styles.rowItem}>
+                    <Text style={styles.text}>X</Text>
+                    <Text style={[styles.text, getTextColor(incomeEven)]}>{incomeEven} €</Text>
+                </View>
+                <View style={styles.rowItem}>
+                    <Text style={styles.text}>2</Text>
+                    <Text style={[styles.text, getTextColor(incomeTwo)]}>{incomeTwo} €</Text>
+                </View>
+            </View> 
         </View>
     )
 }
@@ -143,16 +146,20 @@ export const SavedHouseIncome: React.FC<{bets: Bet[]}> = ({bets}) => {
     return (
         <View style={[styles.container, {marginTop: 2}]}>
     
-            <View style={[styles.textRow]}>
-                <Text style={styles.text}>1</Text>
-                <Text style={styles.text}>X</Text>
-                <Text style={styles.text}>2</Text>
-            </View>
-            <View style={[styles.textRow]}>
-                <Text style={[styles.text, getTextColor(one)]}>{one} €</Text>
-                <Text style={[styles.text, getTextColor(even)]}>{two} €</Text>
-                <Text style={[styles.text, getTextColor(two)]}>{even} €</Text>
-            </View>
+        <View style={[styles.textRow]}>
+                <View style={styles.rowItem}>
+                    <Text style={styles.text}>1</Text>
+                    <Text style={[styles.text, getTextColor(one)]}>{one} €</Text>
+                </View>
+                <View style={styles.rowItem}>
+                    <Text style={styles.text}>X</Text>
+                    <Text style={[styles.text, getTextColor(even)]}>{even} €</Text>
+                </View>
+                <View style={styles.rowItem}>
+                    <Text style={styles.text}>2</Text>
+                    <Text style={[styles.text, getTextColor(two)]}>{two} €</Text>
+                </View>
+            </View> 
         </View>
     )
 }
@@ -163,6 +170,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         width: "90%",
         marginTop: 20,
+        // alignItems: 
     },
     header: {
         textAlign: 'center',
@@ -179,10 +187,14 @@ const styles = StyleSheet.create({
     },
     textRow: {
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
         width: "100%" 
 
-    }
+    },
+    rowItem: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'}
 })
 
 export default HouseIncome;

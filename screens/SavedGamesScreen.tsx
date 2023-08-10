@@ -12,19 +12,6 @@ type SavedGamesScreenProps = {
     navigation: any;
 }
 
-// type Game = {
-//     outcomeOne: string;
-//     outcomeTwo: string;
-//     bets: Bet[];
-//     houseEquity: number;
-//     currentPrize: number;
-//     currentStake: number;
-//     currentMultiplier: number;
-//     selectedOption: string;
-// }
-
-
-
 const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
 
     const [savedGamesFound, setSavedGamesFound] = React.useState<boolean>(false);
@@ -156,21 +143,25 @@ const SavedGamesScreen: React.FC<SavedGamesScreenProps> = ({navigation}) => {
     return (
       
         <View style={styles.container}>
-          <Text style={{color: 'white'}}>Test</Text>
-          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center'}}>
-             {savedGames.map((game: Game) => {
-                    return <SavedGame game={game} key={game.gameId}/>
-                })}
-          </ScrollView>
-          {/* <FlatList 
-              data={savedGames}
-              renderItem={renderGame}
-              keyExtractor={(item) => item.gameId}
-              contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
-            /> */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerText}>Saved Books</Text>
+          </View>
 
+          {savedGames.length > 0 ? 
+           <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center'}}>
+           {savedGames.map((game: Game) => {
+                  return <SavedGame game={game} key={game.gameId}/>
+              })}
+          </ScrollView> : 
+          //  ---  OTHERWISE ----
+         
+          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Text style={styles.text}>No saved books</Text>
+          </View>
+          }
           
-        
+         
+      
         </View>)
 }
 
@@ -179,7 +170,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
-    justifyContent: 'center'
+    // justifyContent: 'center'
   },
   buttonContainer: {
     borderColor: 'white',
@@ -189,7 +180,7 @@ const styles = StyleSheet.create({
     // height: '12%',
     height: 100,
     margin: 10,
-    width: '80%'
+    width: '95%'
   },
   leftButtonContainer: {
     backgroundColor: COLORS.primary,
@@ -214,6 +205,25 @@ const styles = StyleSheet.create({
     fontFamily: "Play-Bold",
     textTransform: 'uppercase',
     color: 'white'
+  },
+  headerContainer: {
+    height: '10%',
+    width: '90%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderColor: 'white'
+  },
+  headerText: {
+    textAlign: 'center',
+    justifyContent: 'center',
+    fontFamily: "Play-Bold",
+    textTransform: 'uppercase',
+    color: 'white',
+    fontSize: 20,
+  },
+  noSavedText: {
+    
   }
 })
 

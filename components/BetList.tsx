@@ -1,24 +1,27 @@
 import React, {useMemo, useState} from "react";
-import {View, Text, StyleSheet, ScrollView} from "react-native";
+import {View, Text, StyleSheet, ScrollView, TouchableHighlight} from "react-native";
 import COLORS from "../colors";
 import { Bet, addZeroes } from "../screens/GambleScreen";
 
 
 interface BetListProps {
     bets: Bet[];
+    openEditView(bet: Bet): void;
 }
 
-const BetList: React.FC<BetListProps> = ({ bets }) => {
+const BetList: React.FC<BetListProps> = ({ bets, openEditView }) => {
     const renderedBets = useMemo(() => {
       return bets.map((bet) => {
         return (
-          <View key={bet.id} style={styles.row}>
+          <TouchableHighlight key={bet.id} style={styles.row} onPress={() => openEditView(bet)} underlayColor={COLORS.secondary}>
+            <>
             <Text style={styles.text}>{bet.GamblerName}</Text>
             <Text style={styles.text}>{bet.option}</Text>
             <Text style={styles.text}>{addZeroes(bet.stake)}€</Text>
             <Text style={styles.text}>{addZeroes(bet.multiplier)}</Text>
             <Text style={styles.text}>{addZeroes(bet.stake * bet.multiplier)}€</Text>
-          </View>
+            </>
+          </TouchableHighlight>
         );
       });
     }, [bets]);

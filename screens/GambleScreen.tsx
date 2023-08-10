@@ -14,7 +14,7 @@ import COLORS from '../colors';
 import {SelectionButton, DefaultButton} from '../components/Buttons';
 import BetList from '../components/BetList';
 import uuid from 'react-native-uuid';
-
+import EditView from '../components/EditView';
 import CircularSlider from '../components/CircularSlider';
 import { Slider} from '@rneui/themed';
 import HouseIncome from '../components/HouseIncome';
@@ -53,11 +53,16 @@ export function addZeroes(num: number | string): string {
   return numberValue.toFixed(2);
 }
 
-// enum options {
-//   one = 1,
-//   two = 2,
-//   even = 3
-// }
+enum multiplierChange {
+  decrease,
+  increase
+}
+
+type SetupParams = {
+  gameId: string,
+  outcomeOne: string,
+  outcomeTwo: string
+}
 
 type GambleScreenProps = {
     navigation: any;
@@ -86,11 +91,14 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
     const [gameId, setGameId] = useState<any>("")
     const [bets, setBets] = useState<Bet[]>([])
 
+    const [editView, setEditView] = useState<JSX.Element | null>(null);
+
 
     
     // Helper to prevent save function from running on initial render
     const [isInitial, setIsInitial] = useState<boolean>(true)
 
+    // Set states when screen is rendered
     useEffect(() => {
       if (route.params.source == "setup"){
         console.log('Initializing from setup')
@@ -127,10 +135,19 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
       console.log("Game id set to: ", gameId)
     }, [gameId])
 
+
+    // Add device backbutton press eventlistener
     useEffect(() => {
       const backAction = () => {
+        if (editView != null){
+          setEditView(null)
+          return true;
+        }
+        else {
           navigation.navigate('LaunchScreen')
-        return true;
+          return true;
+        }
+  
       };
   
       const backHandler = BackHandler.addEventListener(
@@ -141,6 +158,7 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
       return () => backHandler.remove();
     }, []);
     
+    // Vibrate when circular slider is moved
     useEffect(() => {
       if (Math.round(stake) != previousValue){
         Vibration.vibrate(15)
@@ -148,21 +166,20 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
       setPreviousValue(Math.round(stake))
     }, [stake])
 
+
+   
     useMemo(() => {
       setCurrentPrize(stake * multiplier)
     }, [stake, multiplier])
 
-
-    enum multiplierChange {
-      decrease,
-      increase
-    }
-
-    type SetupParams = {
-      gameId: string,
-      outcomeOne: string,
-      outcomeTwo: string
-    }
+    // when bets is updated, recalculate house equity
+    useMemo(() => {
+      let sum = 0;
+      for (const bet of bets){
+        sum += bet.stake;
+      }
+      setHouseEquity(sum);
+    }, [bets])
 
     // When new bet is added, selectedOption is set to none. This triggers save function.
     useEffect(() => {
@@ -172,6 +189,14 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
         save();
       }
     }, [selectedOption])
+
+    // When bet is edited or removed save function is triggered.
+    useEffect(() => {
+      if (!isInitial){
+        console.log('Autosave on bet edit or removal...')
+        save();
+      }
+    }, [bets])
     
     async function save(setupParams?: SetupParams){
       const db = SQLite.openDatabase(
@@ -182,23 +207,6 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
         () => {console.log('Database opened successfully!')},
         (error: any) => {console.log("Error while opening database: " + error)}
       )
-
-      // delete database:
-      
-      // db.transaction((tx: any) => {
-      //   tx.executeSql(
-      //     'INSERT OR REPLACE INTO events (gameId) VALUES (?)',
-      //     ['idtest123'],
-      //     (_ , results: any) => {
-      //       console.log('Saved succesfully')
-      //       db.close()
-      //     },
-      //     (error: any) => {
-      //       console.log('Error while saving', error)
-      //       db.close()
-      //     }
-      //   );
-      // })
 
       db.transaction((tx: any) => {
           console.log('saving with id', setupParams ? setupParams.gameId : gameId)
@@ -214,17 +222,7 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
             multiplier,
             selectedOption
           ],
-          (_ , results: any) => {
-            const rows = results.rows;
-            // for (let i = 0; i < rows.length; i++) {
-            //   console.log('Saved row: ', rows.item(i));
-            //   // console.log('Row:', rows.item(i));
-            // }
-            // console.log('rows affected length: ', results.rowsAffected);
-            // for (let i = 0; i < results.rowsAffected.length; i++){
-            //   console.log('Row affected: ', results.rowsAffected[i])
-            // }
-            
+          (_ , results: any) => {            
             if (results.rowsAffected === 1) {
               console.log('Row inserted');
             } else if (results.rowsAffected === 0) {
@@ -304,12 +302,22 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
         
       }
       if (selectedOption == Options.none){setOptionMissing(true)}
-      if (stake <= 0){}
+      if (stake <= 0){setStakeMissing(true)}
       if (gamblerName == ""){setGamblerNameMissing(true)}          
     }
 
+    function openEditView(bet: Bet){
+        setEditView(
+          <EditView    bet={bet} 
+                       bets={bets} 
+                       setBets={setBets} 
+                       setEditView={setEditView} />
+        )
+    }
+      
   return (
     <View style={styles.container}>
+
 
         <View style={styles.headerContainer}>
           <View style={styles.headerTextContainer}><Text style={styles.headerText}>{outcomeOne}</Text></View>
@@ -335,15 +343,18 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
         </View>
 
         <CircularSlider value={stake}
-                        onChange={(val: number) => setStake(Math.round(val))}
+                        onChange={(val: number) => {
+                          setStake(Math.round(val))
+                          setStakeMissing(false)
+                        }}
                         textSize={30}
                         showText={true}
                         showEuro={true}
                         textColor="white"
                         trackColor='white' 
-                        trackTintColor='grey'
-                        trackWidth={3}
-                        thumbColor='white'
+                        trackTintColor={stakeMissing ? "red" : "grey"}
+                        trackWidth={1}
+                        thumbColor="white"
         />
 
         <Slider value={multiplier}
@@ -353,13 +364,15 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
                 maximumValue={10} 
                 step={0.05}
                 allowTouchTrack
-                trackStyle={{height: 3}}
+                trackStyle={{height: 1}}
                 maximumTrackTintColor = 'grey'
                 minimumTrackTintColor = 'white'
                 thumbStyle={{height: 30, width: 30, backgroundColor: 'white'}}
                 thumbTouchSize={{width: 1, height: 1}}
           />
          
+       
+
         <Text style={{color: 'white', fontFamily: "Play-Bold"}}>{addZeroes(stake)}€ &times; {addZeroes(multiplier)} = {addZeroes(currentPrize)}€</Text>
 
         <View style={{flexDirection: 'row', marginTop: 10}}>
@@ -373,9 +386,11 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
                         style={{marginTop: 10}} />
         </View>
         
-
     
-        <BetList bets={bets} />
+          {editView ? editView : null}
+       
+    
+        <BetList bets={bets} openEditView={openEditView} />
 
         <View style={styles.bottomContainer}>
           <HouseIncome bets={bets}
@@ -384,8 +399,7 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
                        currentStake={stake}
                        currentMultiplier={multiplier}
                        selectedOption={selectedOption} />
-        </View>
-        
+        </View>   
     </View>
   );
 }
@@ -395,6 +409,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
     },
     headerContainer: {
       flexDirection: 'row',
@@ -430,7 +446,8 @@ const styles = StyleSheet.create({
       color: 'white',
       borderRadius: 5,
       textAlign: 'center',
-      marginBottom: 10
+      marginBottom: 10,
+      fontFamily: "Play-Bold",
     },
     bottomContainer: {
       justifyContent: 'flex-end', 
