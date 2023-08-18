@@ -97,7 +97,7 @@ const EditView: React.FC<EditViewProps> = ({bet, bets, setBets, setEditView}) =>
                                 onChangeText={setGamblerName}
                                 style={[styles.textInput]}
                                 autoCapitalize='characters'
-                                placeholderTextColor="#45454a"  />
+                                placeholderTextColor={COLORS.placeholder}  />
                     </View> 
 
                     <View style={styles.subContainer}>
@@ -116,7 +116,7 @@ const EditView: React.FC<EditViewProps> = ({bet, bets, setBets, setEditView}) =>
                                 style={[styles.textInput]}
                                 autoCapitalize='characters'
                                 keyboardType='numeric'
-                                placeholderTextColor="#45454a"  />
+                                placeholderTextColor={COLORS.placeholder}  />
                     </View> 
                     <View style={styles.subContainer}>
                         <Text style={styles.text}>Multiplier</Text>
@@ -125,7 +125,7 @@ const EditView: React.FC<EditViewProps> = ({bet, bets, setBets, setEditView}) =>
                                 style={[styles.textInput]}
                                 autoCapitalize='characters'
                                 keyboardType='numeric'
-                                placeholderTextColor="#45454a"  />
+                                placeholderTextColor={COLORS.placeholder}  />
                     </View> 
 
                     <View style={{width: '90%'}}> 
@@ -166,7 +166,8 @@ const styles= StyleSheet.create({
         borderRadius: 5,
         // textAlign: 'center',
         fontFamily: "Play-Bold",
-        marginBottom: 20
+        marginBottom: 20,
+        color: 'white'
     },
     text: {
         textAlign: 'center',
@@ -175,7 +176,8 @@ const styles= StyleSheet.create({
         textTransform: 'uppercase',
         // width: '20%',
         textDecorationLine: 'underline',
-        marginBottom: 5
+        marginBottom: 5,
+        color: 'white'
     },
     middleButton: { marginLeft: 10, marginRight: 10},
     selectButton: {

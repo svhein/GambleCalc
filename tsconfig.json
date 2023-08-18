@@ -2,7 +2,7 @@
   "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
     "target": "es6", // or "es2020" or any other ES6-compatible version
-    "module": "es6",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "./dist", // Output directory for transpiled files
     "rootDir": "./src", // Source directory for TypeScript files

@@ -333,6 +333,7 @@ const GambleScreen: React.FC<GambleScreenProps> = ({navigation, route}) => {
                 onChangeText={handleNameInputChange}
                 value={gamblerName}
                 placeholder="Name of bettor"
+                placeholderTextColor={COLORS.placeholder}
                 autoCapitalize='characters'
           />
 
@@ -417,7 +418,7 @@ const styles = StyleSheet.create({
       borderBottomWidth: 1,
       borderColor: 'white', 
       marginBottom: 7, 
-      width: "90%"
+      width: "90%",
     },
     headerTextContainer: {
       flex: 1,
@@ -432,6 +433,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       fontFamily: "Play-Bold",
       textTransform: 'uppercase',
+      color: 'white'
     },
     buttonRow: {
         flexDirection: 'row',
@@ -448,6 +450,7 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       marginBottom: 10,
       fontFamily: "Play-Bold",
+
     },
     bottomContainer: {
       justifyContent: 'flex-end', 

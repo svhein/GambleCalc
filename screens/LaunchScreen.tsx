@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, StatusBar } from 'react-native';
 import { DefaultButton } from '../components/Buttons';
 import COLORS from '../colors';
 import SVGComponent from '../components/Logo';
@@ -49,6 +49,9 @@ const LauchScreen: React.FC<LaunchScreenProps> = ({navigation}) => {
 
     return (
         <View style={styles.container}>
+            <StatusBar 
+                backgroundColor={COLORS.primary}/>
+
             <View style={styles.logoContainer}>
                 <SVGComponent />
                 <View style={{paddingBottom: 2}}>

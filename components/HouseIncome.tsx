@@ -148,15 +148,15 @@ export const SavedHouseIncome: React.FC<{bets: Bet[]}> = ({bets}) => {
     
         <View style={[styles.textRow]}>
                 <View style={styles.rowItem}>
-                    <Text style={styles.text}>1</Text>
+                    <Text style={[styles.text, {color: 'white'}]}>1</Text>
                     <Text style={[styles.text, getTextColor(one)]}>{one} €</Text>
                 </View>
                 <View style={styles.rowItem}>
-                    <Text style={styles.text}>X</Text>
+                    <Text style={[styles.text, {color: 'white'}]}>X</Text>
                     <Text style={[styles.text, getTextColor(even)]}>{even} €</Text>
                 </View>
                 <View style={styles.rowItem}>
-                    <Text style={styles.text}>2</Text>
+                    <Text style={[styles.text, {color: 'white'}]}>2</Text>
                     <Text style={[styles.text, getTextColor(two)]}>{two} €</Text>
                 </View>
             </View> 
@@ -177,13 +177,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         fontFamily: "Play-Bold",
         textTransform: 'uppercase',
-        textDecorationLine: 'underline'
+        textDecorationLine: 'underline',
+        color: 'white'
     },
     text: {
         textAlign: 'center',
         justifyContent: 'center',
         fontFamily: "Play-Bold",
         textTransform: 'uppercase',
+        color: 'white'
     },
     textRow: {
         flexDirection: 'row',

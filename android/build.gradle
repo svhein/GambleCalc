@@ -7,6 +7,7 @@ buildscript {
         compileSdkVersion = 33
         targetSdkVersion = 33
 
+
         // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
         ndkVersion = "23.1.7779620"
     }
@@ -19,3 +20,31 @@ buildscript {
         classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
+
+// android {
+//     buildTypes {
+//         release {
+//             signingConfig signingConfigs.release
+//         }
+//     }
+//     signingConfigs {
+//         release {
+//             storeFile file("C:/Users/samps/omatProjektit/Ohjelmointi/GambleCalc/GambleCalc/gambleCalcKey.keystore")
+//             storePassword "vissypullo"
+//             keyAlias "gambleCalcKey"
+//             keyPassword "vissypullo"
+//         }
+//     }
+//     buildTypes {
+//         release {
+//             signingConfig signingConfigs.release
+//         }
+//     }
+// }
+
+
+
+
+
+
+

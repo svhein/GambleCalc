@@ -4,6 +4,7 @@ import colors from "../colors";
 import { DefaultButton } from "../components/Buttons";
 import uuid from 'react-native-uuid';
 
+
 interface SetupProps {
     navigation: any;
 }
@@ -54,14 +55,16 @@ export const SetupScreen: React.FC<SetupProps> = ({navigation}) => {
             <TextInput placeholder="OUTCOME 1"
                         onChangeText={handleOutComeOneChange}
                         style={[styles.textInput, outComeOneMissing ? {borderColor: 'red'} : {}]}
-                        autoCapitalize='characters' />
+                        autoCapitalize='characters'
+                        placeholderTextColor={colors.placeholder} />
 
             <Text style={styles.text}>vs.</Text>
 
             <TextInput placeholder="OUTCOME 2"
                         onChangeText={handleOutComeTwoChange}
                         style={[styles.textInput, outComeTwoMissing ? {borderColor: 'red'} : {}]}
-                        autoCapitalize='characters' />
+                        autoCapitalize='characters'
+                        placeholderTextColor={colors.placeholder} /> 
 
             <DefaultButton onPress={handleButtonPress} 
                             text="Start" 
@@ -83,7 +86,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         fontFamily: "Play-Bold",
         textTransform: 'uppercase',
-        padding: 20
+        padding: 20,
+        color: 'white'
       },
     textInput: {
         borderColor: 'white',
@@ -93,6 +97,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         textAlign: 'center',
         fontFamily: "Play-Bold",
+        color: 'white'
     },
     button: {
         marginTop: 100
