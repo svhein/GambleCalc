@@ -12,7 +12,7 @@ Avaible on [Google Play](https://play.google.com/store/apps/details?id=com.gambl
 ### Screenshots
 <p float="left">
 <img src='https://github.com/svhein/GambleCalc/blob/master/screenshots/Screenshot_GambleCalc_1.jpg'
-   width='300'>
+   width='200'>
 <img src='https://github.com/svhein/GambleCalc/blob/master/screenshots/Screenshot_GambleCalc_2.jpg'
-   width='300'>
+   width='200'>
 </p>
