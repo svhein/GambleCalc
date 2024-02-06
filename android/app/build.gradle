@@ -78,8 +78,8 @@ android {
         applicationId "com.gamblecalc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
     }
     signingConfigs {
         debug {
@@ -90,9 +90,9 @@ android {
         }
         release {
             storeFile file("C:/Users/samps/omatProjektit/Ohjelmointi/GambleCalc/GambleCalc/gambleCalcKey.keystore")
-            storePassword "vissypullo"
+            storePassword GAMBLE_CALC_STORE_PASSWORD
             keyAlias "gambleCalcKey"
-            keyPassword "vissypullo"
+            keyPassword GAMBLE_CALC_KEY_PASSWORD
         }
     }
     buildTypes {

@@ -23,26 +23,6 @@ buildscript {
     }
 }
 
-// android {
-//     buildTypes {
-//         release {
-//             signingConfig signingConfigs.release
-//         }
-//     }
-//     signingConfigs {
-//         release {
-//             storeFile file("C:/Users/samps/omatProjektit/Ohjelmointi/GambleCalc/GambleCalc/gambleCalcKey.keystore")
-//             storePassword "vissypullo"
-//             keyAlias "gambleCalcKey"
-//             keyPassword "vissypullo"
-//         }
-//     }
-//     buildTypes {
-//         release {
-//             signingConfig signingConfigs.release
-//         }
-//     }
-// }
 
 
 
